@@ -1,28 +1,43 @@
-import { notFoundError } from "@/errors"; 
-import hotelsRepository from "@/repositories/hotels-repository";
-import { Hotel } from "@prisma/client";
+import hotelRepository from "@/repositories/hotel-repository";
+import enrollmentRepository from "@/repositories/enrollment-repository";
+import ticketRepository from "@/repositories/ticket-repository";
+import { notFoundError } from "@/errors";
+import { cannotListHotelsError } from "@/errors/cannot-list-hotels-error";
 
-async function getHotelsByTicketId(userId: number, ticketId: number) {
-  const result = await hotelsRepository.findHotelByTicketId(userId, ticketId);
-  if (!result) {
-    throw notFoundError(); //lançar -> pro arquivo que chamou essa função
+async function listHotels(userId: number) {
+  //Tem enrollment?
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) {
+    throw notFoundError();
   }
-  return result;
+  //Tem ticket pago isOnline false e includesHotel true
+  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
+
+  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw cannotListHotelsError();
+  }
 }
 
-async function getRoomsByHotelId(HotelId: number, userId: number) {
-  const enrollmentWithAddress = await hotelsRepository.findtRoomsByHotelId(HotelId, userId);
+async function getHotels(userId: number) {
+  await listHotels(userId);
 
-  if (!enrollmentWithAddress) throw notFoundError();
-
-  return {
-    enrollmentWithAddress
-  };
+  const hotels = await hotelRepository.findHotels();
+  return hotels;
 }
 
-const hotelsService = {
-  getHotelsByTicketId,
-  getRoomsByHotelId
+async function getHotelsWithRooms(userId: number, hotelId: number) {
+  await listHotels(userId);
+  const hotel = await hotelRepository.findRoomsByHotelId(hotelId);
+
+  if (!hotel) {
+    throw notFoundError();
+  }
+  return hotel;
+}
+
+const hotelService = {
+  getHotels,
+  getHotelsWithRooms,
 };
 
-export default hotelsService;
+export default hotelService;
