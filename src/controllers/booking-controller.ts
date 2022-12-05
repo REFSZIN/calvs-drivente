@@ -4,13 +4,12 @@ import { Response } from "express";
 import httpStatus from "http-status";
 
 export async function getBooking(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
   try {
-    const ticketId = Number(req.query.HotelId);
-    const { userId } = req;
-    if (!ticketId || !userId) {
+    if (!userId) {
       return res.sendStatus(httpStatus.BAD_REQUEST);
     }
-    const Hotels = await bookingService.getHotelsByTicketId(userId, ticketId);
+    const Hotels = await bookingService.getBooking(userId);
 
     return res.status(httpStatus.OK).send(Hotels);
   } catch (error) {
@@ -19,13 +18,13 @@ export async function getBooking(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function postBooking(req: AuthenticatedRequest, res: Response) {
-  const HotelId = Number(req.query.HotelId);
+  const newBooking = req.body;
   const { userId } = req;
   try {
-    if (!HotelId || !userId ) {
+    if (!newBooking || !userId ) {
       return res.sendStatus(httpStatus.BAD_REQUEST);
     }
-    const Rooms = await bookingService.getRoomsByHotelId(HotelId, userId);
+    const Rooms = await bookingService.postBooking(userId, newBooking);
 
     return res.status(httpStatus.OK).send(Rooms);
   } catch (error) {
@@ -36,14 +35,14 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function putBooking(req: AuthenticatedRequest, res: Response) {
-  const HotelId = Number(req.query.HotelId);
+  const bookingId = Number(req.query.bookingId);
   const { userId } = req;
   try {
-    if (!HotelId || !userId ) {
+    if (!bookingId || !userId) {
       return res.sendStatus(httpStatus.BAD_REQUEST);
-    }getBooking, getBooking, putBooking;
+    }
 
-    const Rooms = await bookingService.getRoomsByHotelId(HotelId, userId);
+    const Rooms = await bookingService.putBooking(bookingId, userId);
 
     return res.status(httpStatus.OK).send(Rooms);
   } catch (error) {

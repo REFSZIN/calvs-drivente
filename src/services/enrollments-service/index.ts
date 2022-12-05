@@ -8,11 +8,11 @@ import { Address, Enrollment } from "@prisma/client";
 
 async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
   const result = await getAddress(cep);
-
+  
   if (!result) {
-    throw notFoundError(); //lançar -> pro arquivo que chamou essa função
+    throw notFoundError();
   }
-
+  
   const {
     bairro,
     localidade,
@@ -60,16 +60,15 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   const enrollment = exclude(params, "address");
   const address = getAddressForUpsert(params.address);
 
-  //BUG - Verificar se o CEP é válido
-
   const result = await getAddressFromCEP(address.cep);
+  
   if (result.error) {
     throw notFoundError();
   }
 
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, "userId"));
 
-  await addressRepository.upsert(newEnrollment.id, address, address);
+  await addressRepository.upsert(newEnrollment.id, address, address);  
 }
 
 function getAddressForUpsert(address: CreateAddressParams) {

@@ -1,18 +1,14 @@
 import app, { init } from "@/app";
-import { prisma } from "@/config";
 import faker from "@faker-js/faker";
 import { TicketStatus } from "@prisma/client";
-import e from "express";
 import httpStatus from "http-status";
 import * as jwt from "jsonwebtoken";
 import supertest from "supertest";
 import {
   createEnrollmentWithAddress,
   createUser,
-  createTicketType,
   createTicket,
   createPayment,
-  generateCreditCardData,
   createTicketTypeWithHotel,
   createTicketTypeRemote,
   createHotel,
@@ -61,8 +57,7 @@ describe("GET /hotels", () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketTypeRemote();
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const payment = await createPayment(ticket.id, ticketType.price);
-      //Hoteis no banco
+      await createPayment(ticket.id, ticketType.price);
 
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
@@ -73,7 +68,7 @@ describe("GET /hotels", () => {
       const user = await createUser();
       const token = await generateValidToken(user);
 
-      const ticketType = await createTicketTypeRemote();
+      await createTicketTypeRemote();
 
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
@@ -86,7 +81,7 @@ describe("GET /hotels", () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketTypeWithHotel();
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const payment = await createPayment(ticket.id, ticketType.price);
+      await createPayment(ticket.id, ticketType.price);
 
       const createdHotel = await createHotel();
 
@@ -111,8 +106,7 @@ describe("GET /hotels", () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketTypeWithHotel();
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const payment = await createPayment(ticket.id, ticketType.price);
-      //Hoteis no banco
+      await createPayment(ticket.id, ticketType.price);
 
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
@@ -153,8 +147,7 @@ describe("GET /hotels/:hotelId", () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketTypeRemote();
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const payment = await createPayment(ticket.id, ticketType.price);
-      //Hoteis no banco
+      await createPayment(ticket.id, ticketType.price);
 
       const response = await server.get("/hotels/1").set("Authorization", `Bearer ${token}`);
 
@@ -164,8 +157,8 @@ describe("GET /hotels/:hotelId", () => {
     it("should respond with status 404 when user has no enrollment ", async () => {
       const user = await createUser();
       const token = await generateValidToken(user);
-
-      const ticketType = await createTicketTypeRemote();
+      
+      await createTicketTypeRemote();
 
       const response = await server.get("/hotels/1").set("Authorization", `Bearer ${token}`);
 
@@ -178,9 +171,9 @@ describe("GET /hotels/:hotelId", () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketTypeWithHotel();
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const payment = await createPayment(ticket.id, ticketType.price);
-
-      const createdHotel = await createHotel();
+      await createPayment(ticket.id, ticketType.price);
+      
+      await createHotel();
 
       const response = await server.get("/hotels/100").set("Authorization", `Bearer ${token}`);
 
@@ -193,9 +186,8 @@ describe("GET /hotels/:hotelId", () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketTypeWithHotel();
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const payment = await createPayment(ticket.id, ticketType.price);
+      await createPayment(ticket.id, ticketType.price);
 
-      //TODO factory
       const createdHotel = await createHotel();
 
       const createdRoom = await createRoomWithHotelId(createdHotel.id);
@@ -227,7 +219,7 @@ describe("GET /hotels/:hotelId", () => {
       const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketTypeWithHotel();
       const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
-      const payment = await createPayment(ticket.id, ticketType.price);
+      await createPayment(ticket.id, ticketType.price);
 
       const createdHotel = await createHotel();
 

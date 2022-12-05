@@ -22,9 +22,9 @@ export async function postCreateOrUpdateEnrollment(req: AuthenticatedRequest, re
       userId: req.userId,
     });
 
-    return res.sendStatus(httpStatus.OK);
-  } catch (error) {
-    return res.sendStatus(httpStatus.BAD_REQUEST);
+    res.sendStatus(httpStatus.OK);
+  } catch (error) {    
+    return res.sendStatus(httpStatus.BAD_REQUEST);        
   }
 }
 

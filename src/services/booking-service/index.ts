@@ -19,7 +19,7 @@ async function getBooking(userId: number) {
   }
 }
 
-async function postBooking(userId: number) {
+async function postBooking(userId: number, newBooking: object) {
   await listHotels(userId);
 
   const hotels = await bookingRepository.findHotels();

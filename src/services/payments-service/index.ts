@@ -1,62 +1,23 @@
-import { notFoundError, unauthorizedError } from "@/errors";
-import paymentRepository, { PaymentParams } from "@/repositories/payment-repository";
-import ticketRepository from "@/repositories/ticket-repository";
-import enrollmentRepository from "@/repositories/enrollment-repository";
+import { notFoundError } from "@/errors";
+import paymentRepository from "@/repositories/payments-repository";
+import { Payment } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
-async function verifyTicketAndEnrollment(ticketId: number, userId: number) {
-  const ticket = await ticketRepository.findTickeyById(ticketId);
+async function getPaymentByTicketId(ticketId: number): Promise<Payment> {  
+  const paymentResult = await paymentRepository.findPaymentByTicketId(ticketId);
+  
+  if(!paymentResult) throw notFoundError();
 
-  if (!ticket) {
-    throw notFoundError();
-  }
-  const enrollment = await enrollmentRepository.findById(ticket.enrollmentId);
-
-  if (enrollment.userId !== userId) {
-    throw unauthorizedError();
-  }
+  return paymentResult;
 }
 
-async function getPaymentByTicketId(userId: number, ticketId: number) {
-  await verifyTicketAndEnrollment(ticketId, userId);
-
-  const payment = await paymentRepository.findPaymentByTicketId(ticketId);
-
-  if (!payment) {
-    throw notFoundError();
-  }
-  return payment;
-}
-
-async function paymentProcess(ticketId: number, userId: number, cardData: CardPaymentParams) {
-  await verifyTicketAndEnrollment(ticketId, userId);
-
-  const ticket = await ticketRepository.findTickeWithTypeById(ticketId);
-
-  const paymentData = {
-    ticketId,
-    value: ticket.TicketType.price,
-    cardIssuer: cardData.issuer,
-    cardLastDigits: cardData.number.toString().slice(-4),
-  };
-
-  const payment = await paymentRepository.createPayment(ticketId, paymentData);
-
-  await ticketRepository.ticketProcessPayment(ticketId);
-
-  return payment;
-}
-
-export type CardPaymentParams = {
-  issuer: string,
-  number: number,
-  name: string,
-  expirationDate: Date,
-  cvv: number
+async function createPayment(paymentDataCreate: Prisma.PaymentUncheckedCreateInput) {
+  return await paymentRepository.create(paymentDataCreate);
 }
 
 const paymentService = {
   getPaymentByTicketId,
-  paymentProcess,
+  createPayment
 };
 
 export default paymentService;
